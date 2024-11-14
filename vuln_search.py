@@ -1,14 +1,16 @@
 import argparse
 import nmap
 import subprocess
+import time
 
 def scan_target(targets):
     nm = nmap.PortScanner()
     services_info = []
 
     for target in targets:
-        print(f"Scanning target: {target}...")
+        print(f"\nStarting scan for target: {target}...")
         nm.scan(target, arguments='-sV -p- -Pn -T4 -v')
+        print("Scan in progress...", end="")
         for host in nm.all_hosts():
             for proto in nm[host].all_protocols():
                 lport = nm[host][proto].keys()
@@ -20,18 +22,23 @@ def scan_target(targets):
                         services_info.append(f"{product} {version}")
                     else:
                         services_info.append(service)
+        print("\rScan completed for target: " + target)
     return services_info
 
 def search_exploits(services):
     results = {}
+    print("\nSearching for exploits...")
     for service in services:
+        print(f"Searching exploits for: {service}", end="")
         try:
             output = subprocess.run(['searchsploit', service, '-w'], capture_output=True, text=True)
             if output.stderr:
                 print("Error:", output.stderr)
-            results[service] = output.stdout.strip()
+            results[service] = output.stdout.strip() or "No exploits found."
         except Exception as e:
             results[service] = str(e)
+        print("\rExploits search completed for: " + service)
+        time.sleep(0.1)  # Small delay to ensure user can read each service being processed
     return results
 
 def load_targets(file_path):
@@ -55,11 +62,10 @@ def main():
         return
 
     services = scan_target(targets)
-    print("Services and versions found:")
+    print("\nServices and versions found:")
     for service in services:
         print(service)
 
-    print("\nSearching for exploits...")
     exploit_results = search_exploits(services)
     for service, exploits in exploit_results.items():
         print(f"\nExploits for {service}:")
