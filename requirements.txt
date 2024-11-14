@@ -1,3 +1,2 @@
 python-nmap
-subprocess
 argparse
