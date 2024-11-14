@@ -5,8 +5,6 @@ Nmap scans hosts and queries searchsploit for any public exploits
 
 Create the venv environment
 
-$ python -m venv <directory>
-
 $ python3 -m venv venv
 
 Activate it:
